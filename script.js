@@ -1,91 +1,18 @@
-/* ==========================================================================
-   THE 16 STONES
-   A traditional village stone-position guessing trick.
-   Plain JavaScript, no libraries.
-
-   THE TRICK, AS IT IS DONE BY HAND
-   --------------------------------
-   16 stones lie in two lines of 8. The player only THINKS of one stone.
-   Nothing is tapped, so the computer never knows which stone it is. All it
-   ever hears is "LEFT" or "RIGHT", four times.
-
-   After each of the first three answers the stones are re-laid like this:
-
-     1. Start at the BOTTOM of both lines and take the two bottom stones,
-        one from each line. That is one pair.
-     2. Put the pair down in a new line: the stone picked first goes
-        underneath, the stone picked second goes on top of it.
-     3. Carry on upwards, pair by pair. The first 4 pairs (8 stones) build
-        the new RIGHT line from the bottom up. The last 4 pairs build the
-        new LEFT line the same way.
-
-   The whole secret is WHICH line the first stone of each pair comes from:
-
-        1st re-lay: start with the line the player named
-        2nd re-lay: start with the OTHER line
-        3rd re-lay: start with the line the player named
-
-   After the fourth answer the player's stone is always the THIRD FROM THE
-   BOTTOM of the line they name.
-
-   WHY IT ALWAYS WORKS
-   -------------------
-   Count places in a line from the bottom: 0, 1, 2 ... 7.
-   A stone at place p belongs to pair number p (pairs are taken bottom-up).
-   Each new line holds 4 pairs, so the stone lands in pair slot (p mod 4)
-   of its new line, which is places 2*(p mod 4) and 2*(p mod 4) + 1:
-
-        new place = 2 * (p mod 4) + b
-
-   where b = 0 if its line was picked first (it goes underneath)
-     and b = 1 if its line was picked second (it goes on top).
-
-   Because the player says which line the stone is in, b is fully under the
-   magician's control each time. Run the rule three times:
-
-        after 1st re-lay:  2*(p mod 4) + b1
-        after 2nd re-lay:  4*(p mod 2) + 2*b1 + b2
-        after 3rd re-lay:  4*b1 + 2*b2 + b3        <- p has vanished
-
-   The starting place p no longer matters at all. With b1, b2, b3 = 0, 1, 0
-   (named, other, named) the stone sits at place 2: third from the bottom.
-   The fourth answer says which of the two lines to look in.
-
-   16 stones, four LEFT/RIGHT answers: 16 -> 8 -> 4 -> 2 -> 1.
-
-   Identity and position are kept apart throughout: every stone has a fixed
-   internal id, `currentLayout` records which id sits in which place, and the
-   id itself is never shown. The painted mark on each stone is only there so
-   the player can keep track of their own stone.
-   ========================================================================== */
-
 (function () {
   'use strict';
 
   var STONE_COUNT = 16;
   var PER_LINE = 8;
-  var ROUNDS = 4;          // four questions
-  var RELAYS = 3;          // three re-lays, one after each of the first three answers
+  var ROUNDS = 4;
+  var RELAYS = 3;
   var LEFT = 0;
   var RIGHT = 1;
 
-  // Which line the first stone of each pair is taken from, for each re-lay.
-  // If your village does it differently, change this: the reveal place below
-  // is worked out from it, so the trick stays correct.
   var FIRST_PICK = ['named', 'other', 'named'];
 
-  // Place (counted from the bottom, 0 = bottom stone) where the chosen stone
-  // always ends up: 4*b1 + 2*b2 + b3. For named/other/named this is 2,
-  // the third stone from the bottom.
   var REVEAL_PLACE = FIRST_PICK.reduce(function (place, who) {
     return place * 2 + (who === 'other' ? 1 : 0);
   }, 0);
-
-  /* ------------------------------------------------------------------------
-     TRICK LOGIC — pure functions, no DOM.
-     A layout is a pair of arrays, layout[LEFT] and layout[RIGHT].
-     Each lists stone ids from the BOTTOM of the line (index 0) to the top.
-     ------------------------------------------------------------------------ */
 
   function otherSide(side) {
     return side === LEFT ? RIGHT : LEFT;
@@ -99,8 +26,6 @@
     FIRST_PICK: FIRST_PICK,
     REVEAL_PLACE: REVEAL_PLACE,
 
-    /** The same 16 stones every game. originalPosition 0-7 runs down the
-        left line from the top, 8-15 down the right line. */
     createStones: function () {
       var stones = [];
       for (var id = 0; id < STONE_COUNT; id++) {
@@ -114,17 +39,15 @@
       stones.forEach(function (stone) {
         var side = stone.originalPosition < PER_LINE ? LEFT : RIGHT;
         var fromTop = stone.originalPosition % PER_LINE;
-        layout[side][PER_LINE - 1 - fromTop] = stone.id; // store bottom-up
+        layout[side][PER_LINE - 1 - fromTop] = stone.id;
       });
       return layout;
     },
 
-    /** Which line gives the first stone of each pair in this re-lay (0, 1, 2). */
     firstSide: function (relay, namedSide, pattern) {
       return (pattern || FIRST_PICK)[relay] === 'named' ? namedSide : otherSide(namedSide);
     },
 
-    /** Take the stones up in pairs from the bottom: first line, then the other. */
     pickUp: function (layout, firstSide) {
       var secondSide = otherSide(firstSide);
       var hand = [];
@@ -134,8 +57,6 @@
       return hand;
     },
 
-    /** Put them down in the same order, each line built from the bottom up:
-        the first 8 stones make the new RIGHT line, the last 8 the new LEFT. */
     layDown: function (hand) {
       var layout = [[], []];
       layout[RIGHT] = hand.slice(0, PER_LINE);
@@ -143,13 +64,11 @@
       return layout;
     },
 
-    /** One complete re-lay after the player names a line. */
     relay: function (layout, namedSide, relayIndex, pattern) {
       var hand = Trick.pickUp(layout, Trick.firstSide(relayIndex, namedSide, pattern));
       return { hand: hand, layout: Trick.layDown(hand) };
     },
 
-    /** After the fourth answer: the stone at the reveal place of the named line. */
     findStone: function (layout, namedSide, revealPlace) {
       return layout[namedSide][revealPlace === undefined ? REVEAL_PLACE : revealPlace];
     },
@@ -159,7 +78,6 @@
     }
   };
 
-  // Lets the logic be checked from Node. Ignored in a browser.
   if (typeof module === 'object' && module.exports) {
     module.exports = Trick;
   }
@@ -167,23 +85,16 @@
     return;
   }
 
-  /* ------------------------------------------------------------------------
-     GAME STATE
-     There is no "selectedStone" while the game runs: the player never taps
-     one. `foundStone` is only filled in at the reveal.
-     ------------------------------------------------------------------------ */
-
   var state = {
-    phase: 'think',          // 'think' -> 'ask' -> 'reveal'
-    stones: [],              // [{ id, originalPosition }]
-    currentLayout: [[], []], // which id is in which place right now
-    currentRound: 0,         // 0..3
-    answers: [],             // LEFT / RIGHT for each round
-    foundStone: null,        // id worked out after the fourth answer
-    busy: false              // true while stones are moving
+    phase: 'think',
+    stones: [],
+    currentLayout: [[], []],
+    currentRound: 0,
+    answers: [],
+    foundStone: null,
+    busy: false
   };
 
-  // id -> the stone's element. Elements are kept out of `state` on purpose.
   var view = new Map();
 
   var el = {
@@ -205,12 +116,11 @@
 
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  // Re-lay timing (milliseconds)
-  var ASIDE_MS = 380;      // both lines slide to the middle
+  var ASIDE_MS = 380;
   var ASIDE_HOLD_MS = 140;
-  var PLACE_MS = 400;      // one stone travelling to its new place
-  var PLACE_STAGGER = 115; // gap between one stone and the next
-  var PAIR_PAUSE = 60;     // extra beat between pairs
+  var PLACE_MS = 400;
+  var PLACE_STAGGER = 115;
+  var PAIR_PAUSE = 60;
   var SETTLE_MS = 160;
   var EASE = 'cubic-bezier(0.45, 0.05, 0.2, 1)';
 
@@ -221,16 +131,6 @@
       setTimeout(resolve, ms);
     });
   }
-
-  /* ------------------------------------------------------------------------
-     STONE APPEARANCE
-     Shape, size, tilt and flecks come from a small seeded generator, so the
-     16 pebbles differ from each other but are identical in every game.
-
-     Each pebble also carries a painted mark (4 colours x 4 shapes = 16) so
-     the player can follow their own stone. Marks are handed out in a fixed
-     scattered order that has nothing to do with the trick.
-     ------------------------------------------------------------------------ */
 
   var PAINTS = [
     { name: 'red', color: '#b3261e' },
@@ -264,7 +164,6 @@
       return min + (max - min) * random();
     };
 
-    // Eight uneven corner radii make an irregular, pebble-like outline.
     var radii = [];
     for (var i = 0; i < 8; i++) {
       radii.push(Math.round(between(38, 62)) + '%');
@@ -303,8 +202,6 @@
       var look = stoneLook(stone.id);
       var mark = markFor(stone.id);
 
-      // The id is used here only to look things up; it is never written
-      // into the page.
       var node = document.createElement('div');
       node.className = 'stone';
       node.setAttribute('role', 'img');
@@ -331,14 +228,10 @@
     });
   }
 
-  /* ------------------------------------------------------------------------
-     GEOMETRY — where each place is on the board, in pixels
-     ------------------------------------------------------------------------ */
-
   function measure() {
     var width = el.board.clientWidth;
     var height = el.board.clientHeight;
-    var top = 40;      // room for the "Left line / Right line" labels
+    var top = 40;
     var bottom = 16;
     var rowHeight = (height - top - bottom) / PER_LINE;
     var size = Math.max(20, Math.min(46, rowHeight * 0.8, width * 0.125));
@@ -348,12 +241,11 @@
       rowHeight: rowHeight,
       top: top,
       lineX: [width * 0.27, width * 0.73],
-      // While being re-laid, the old lines wait side by side in the middle.
+
       asideX: [width / 2 - size * 0.62, width / 2 + size * 0.62]
     };
   }
 
-  /** `place` counts from the bottom, so place 0 is the lowest row on screen. */
   function rowY(geometry, place) {
     return geometry.top + geometry.rowHeight * (PER_LINE - 1 - place + 0.5);
   }
@@ -372,7 +264,6 @@
     });
   }
 
-  /** Put every stone on its current place at once (first paint, resize). */
   function placeAll() {
     var geometry = measure();
     el.board.style.setProperty('--stone', geometry.size.toFixed(1) + 'px');
@@ -381,7 +272,6 @@
     });
   }
 
-  /** Screen-reader names: visible position and painted mark, never the id. */
   function labelStones() {
     eachPlace(state.currentLayout, function (id, side, place) {
       view.get(id).setAttribute(
@@ -390,20 +280,6 @@
       );
     });
   }
-
-  /* ------------------------------------------------------------------------
-     RE-LAY ANIMATION
-     Shows the real hand movements so the player can follow their stone:
-
-       1. Both old lines slide to the middle and wait there side by side,
-          which frees the two places where the new lines will be built.
-       2. Stones are taken from the bottom, one at a time, pair by pair, in
-          exactly the order of `hand`, and set down in the new lines: the
-          new RIGHT line fills from the bottom first, then the new LEFT.
-
-     `fromLayout` is where the stones are now, `hand` is the pick-up order
-     and `toLayout` is where they end up.
-     ------------------------------------------------------------------------ */
 
   function animateRelay(fromLayout, hand, toLayout) {
     var geometry = measure();
@@ -419,14 +295,12 @@
       return wait(360);
     }
 
-    // 1. Old lines step into the middle, keeping their rows.
     eachPlace(fromLayout, function (id, side, place) {
       moveStone(id, geometry.asideX[side], rowY(geometry, place), ASIDE_MS);
     });
 
     return wait(ASIDE_MS + ASIDE_HOLD_MS)
       .then(function () {
-        // 2. Take them one by one, pair by pair, and set them down.
         var lastStart = 0;
         hand.forEach(function (id, k) {
           var node = view.get(id);
@@ -434,13 +308,13 @@
           lastStart = start;
 
           setTimeout(function () {
-            node.style.zIndex = String(100 + k); // the moving stone rides on top
+            node.style.zIndex = String(100 + k);
             node.classList.add('is-lifted');
             moveStone(id, target.get(id).x, target.get(id).y, PLACE_MS);
           }, start);
 
           setTimeout(function () {
-            node.classList.remove('is-lifted'); // set down as it arrives
+            node.classList.remove('is-lifted');
           }, start + PLACE_MS * 0.62);
         });
         return wait(lastStart + PLACE_MS + SETTLE_MS);
@@ -452,15 +326,11 @@
       });
   }
 
-  /* ------------------------------------------------------------------------
-     UI HELPERS
-     ------------------------------------------------------------------------ */
-
   function setPrompt(text, dramatic) {
     el.prompt.classList.remove('is-swap');
     el.prompt.classList.toggle('is-dramatic', Boolean(dramatic));
     el.prompt.textContent = text;
-    void el.prompt.offsetWidth; // restart the entrance animation
+    void el.prompt.offsetWidth;
     el.prompt.classList.add('is-swap');
   }
 
@@ -468,7 +338,6 @@
     el.note.textContent = text;
   }
 
-  /** While stones are moving, every control is disabled. */
   function setBusy(busy) {
     state.busy = busy;
     el.btnLeft.disabled = busy;
@@ -505,11 +374,6 @@
     renderProgress();
   }
 
-  /* ------------------------------------------------------------------------
-     GAME FLOW
-     ------------------------------------------------------------------------ */
-
-  /** STEP 1 — the player has a stone in mind. Nothing is tapped or recorded. */
   function startAsking() {
     if (state.phase !== 'think' || state.busy) {
       return;
@@ -524,7 +388,6 @@
     setBusy(false);
   }
 
-  /** STEPS 2 & 3 — take an answer, then re-lay the stones (or reveal). */
   function answerLine(side) {
     if (state.phase !== 'ask' || state.busy) {
       return;
@@ -537,7 +400,7 @@
       return;
     }
 
-    var relayIndex = state.currentRound; // 0, 1, 2
+    var relayIndex = state.currentRound;
     var fromLayout = state.currentLayout;
     var next = Trick.relay(fromLayout, side, relayIndex);
 
@@ -554,7 +417,6 @@
     });
   }
 
-  /** FINAL REVEAL — the stone at the reveal place of the line just named. */
   function reveal(lastSide) {
     var found = Trick.findStone(state.currentLayout, lastSide);
     state.foundStone = found;
@@ -585,7 +447,6 @@
       });
   }
 
-  /** PLAY AGAIN — the same 16 stones, back in their two starting lines. */
   function newGame() {
     state.phase = 'think';
     state.stones = Trick.createStones();
@@ -605,10 +466,6 @@
     setNote('Remember its mark. Keep it secret.');
   }
 
-  /* ------------------------------------------------------------------------
-     EVENTS
-     ------------------------------------------------------------------------ */
-
   el.btnDone.addEventListener('click', startAsking);
   el.btnLeft.addEventListener('click', function () {
     answerLine(LEFT);
@@ -622,7 +479,6 @@
     }
   });
 
-  // Desktop shortcut: arrow keys answer LEFT / RIGHT.
   document.addEventListener('keydown', function (event) {
     if (state.phase !== 'ask' || state.busy || event.repeat) {
       return;
@@ -634,10 +490,9 @@
     }
   });
 
-  // Keep stones on their places when the board changes size (rotation, resize).
   function onBoardResize() {
     if (state.busy) {
-      needsRelayout = true; // finish the current move first
+      needsRelayout = true;
     } else {
       placeAll();
     }
