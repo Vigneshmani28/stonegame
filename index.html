@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17110d">
+  <title>The 16 Stones</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="game" id="game" data-phase="think">
+
+    <header class="masthead">
+      <h1 class="masthead__title">THE 16 STONES</h1>
+      <p class="masthead__sub">Think of one stone. I'll find it.</p>
+
+      <div class="progress">
+        <span class="progress__label" id="progressLabel" aria-live="polite">CHOOSE YOUR STONE</span>
+        <span class="progress__pips" id="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      </div>
+    </header>
+
+    <section class="board" id="board" aria-label="Sixteen stones in two lines of eight">
+      <span class="board__label board__label--left">Left line</span>
+      <span class="board__label board__label--right">Right line</span>
+      <div class="board__trough board__trough--left"></div>
+      <div class="board__trough board__trough--right"></div>
+      <!-- The 16 stones are created by script.js -->
+      <div class="board__stones" id="stones"></div>
+    </section>
+
+    <section class="panel" aria-label="Game controls">
+      <p class="panel__prompt" id="prompt" aria-live="polite">Pick one stone in your mind.</p>
+
+      <div class="panel__actions">
+        <!-- Step 1: the player only thinks of a stone, nothing is tapped -->
+        <div class="actions actions--single" id="groupThink">
+          <button class="btn btn--primary" id="btnDone" type="button">Done — I chose my stone</button>
+        </div>
+
+        <!-- Steps 2–3: answer which line -->
+        <div class="actions actions--pair" id="groupAsk" hidden>
+          <button class="btn btn--line" id="btnLeft" type="button">LEFT</button>
+          <button class="btn btn--line" id="btnRight" type="button">RIGHT</button>
+        </div>
+
+        <!-- Final reveal -->
+        <div class="actions actions--single" id="groupReveal" hidden>
+          <button class="btn btn--primary" id="btnAgain" type="button" disabled>Play Again</button>
+        </div>
+      </div>
+
+      <div class="panel__foot">
+        <p class="panel__note" id="note">Remember its mark. Keep it secret.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

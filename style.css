@@ -1,0 +1,605 @@
+/* ==========================================================================
+   THE 16 STONES — styles
+   Lamp-lit packed earth, white river pebbles, brass accent.
+   No external fonts, images or libraries.
+   ========================================================================== */
+
+:root {
+  --night: #17110d;
+  --earth: #2a1d15;
+  --clay: #3b291d;
+  --amber: #e9b872;
+  --amber-deep: #c98f45;
+  --pebble: #f3efe6;
+  --ash: #b9a998;
+  --text: #f1e7d8;
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+    "URW Palladio L", P052, Georgia, "Noto Serif", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --ease: cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  background:
+    radial-gradient(90% 55% at 50% -8%, rgba(233, 184, 114, 0.2), transparent 62%),
+    radial-gradient(120% 80% at 50% 110%, rgba(0, 0, 0, 0.55), transparent 60%),
+    linear-gradient(180deg, #221710 0%, var(--night) 55%, #110c09 100%);
+  background-attachment: fixed;
+}
+
+/* --------------------------------------------------------------------------
+   Page frame
+   -------------------------------------------------------------------------- */
+
+.game {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 460px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+
+.masthead {
+  flex: 0 0 auto;
+  text-align: center;
+}
+
+.masthead__title {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.4rem, 6.4vw, 1.85rem);
+  letter-spacing: 0.26em;
+  /* optical centring: cancel the trailing letter-space */
+  margin-right: -0.26em;
+  line-height: 1.15;
+  color: var(--pebble);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6), 0 0 28px rgba(233, 184, 114, 0.28);
+}
+
+.masthead__sub {
+  margin: 6px 0 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ash);
+}
+
+.progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 7px 14px 7px 16px;
+  border-radius: 999px;
+  background: rgba(255, 240, 220, 0.05);
+  border: 1px solid rgba(255, 236, 210, 0.1);
+}
+
+.progress__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--amber);
+  min-width: 9.5em;
+  text-align: left;
+}
+
+.progress__pips {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.progress__pips i {
+  width: 9px;
+  height: 8px;
+  border-radius: 56% 44% 50% 50% / 52% 48% 52% 48%;
+  background: rgba(255, 240, 220, 0.16);
+  transition: background 0.35s, box-shadow 0.35s, transform 0.35s;
+}
+
+.progress__pips i.is-done {
+  background: var(--pebble);
+}
+
+.progress__pips i.is-current {
+  background: var(--amber);
+  box-shadow: 0 0 10px rgba(233, 184, 114, 0.8);
+  transform: scale(1.2);
+}
+
+/* --------------------------------------------------------------------------
+   Board — a patch of packed earth with two shallow troughs
+   -------------------------------------------------------------------------- */
+
+.board {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 330px;
+  max-height: 560px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 235, 205, 0.09);
+  background:
+    radial-gradient(110% 60% at 50% 0%, rgba(233, 184, 114, 0.13), transparent 62%),
+    radial-gradient(circle at 20% 30%, rgba(255, 240, 220, 0.035) 0 1px, transparent 1.6px) 0 0 / 9px 11px,
+    radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.16) 0 1px, transparent 1.6px) 3px 5px / 13px 9px,
+    linear-gradient(180deg, #35251a 0%, #281b13 60%, #20150f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 220, 0.09),
+    inset 0 -40px 70px rgba(0, 0, 0, 0.32),
+    0 34px 60px -26px rgba(0, 0, 0, 0.85);
+  /* --stone is set from script.js to fit the board */
+  --stone: 34px;
+}
+
+.board__label {
+  position: absolute;
+  top: 11px;
+  width: 30%;
+  text-align: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.82rem;
+  color: rgba(185, 169, 152, 0.82);
+  pointer-events: none;
+}
+
+.board__label--left,
+.board__trough--left {
+  left: 12%;
+}
+
+.board__label--right,
+.board__trough--right {
+  left: 58%;
+}
+
+.board__trough {
+  position: absolute;
+  top: 36px;
+  bottom: 12px;
+  width: 30%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.1));
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 235, 205, 0.04),
+    0 1px 0 rgba(255, 235, 205, 0.05);
+}
+
+.board__stones {
+  position: absolute;
+  inset: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Stones
+   .stone       = the mover. script.js sets translate3d() on it.
+   .stone__body = the pebble itself: shape, tilt, lift and shadow.
+   .stone__mark = the painted mark that lets a player follow their stone.
+   -------------------------------------------------------------------------- */
+
+.stone {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+
+/* Halo for the final reveal */
+.stone::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--stone) * 1.6);
+  height: calc(var(--stone) * 1.6);
+  margin: calc(var(--stone) * -0.8) 0 0 calc(var(--stone) * -0.8);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px var(--amber),
+    0 0 22px 4px rgba(233, 184, 114, 0.55),
+    inset 0 0 14px rgba(233, 184, 114, 0.35);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s, transform 0.3s var(--ease);
+  pointer-events: none;
+}
+
+.stone__body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--stone) * var(--w, 1));
+  height: calc(var(--stone) * var(--h, 0.8));
+  margin: calc(var(--stone) * var(--h, 0.8) / -2) 0 0 calc(var(--stone) * var(--w, 1) / -2);
+  border-radius: var(--shape, 50%);
+  background:
+    radial-gradient(120% 95% at 30% 20%, #ffffff 0%, rgba(255, 255, 255, 0) 48%),
+    radial-gradient(95% 85% at 74% 84%, rgba(112, 96, 80, 0.6), rgba(112, 96, 80, 0) 62%),
+    linear-gradient(155deg, var(--tone-a, #f7f3eb) 0%, var(--tone-b, #dcd4c7) 68%, #b8ad9e 100%);
+  box-shadow:
+    inset -2px -3px 5px rgba(84, 68, 54, 0.42),
+    inset 1px 2px 2px rgba(255, 255, 255, 0.9),
+    0 1px 0 rgba(0, 0, 0, 0.4),
+    0 3px 4px rgba(0, 0, 0, 0.5),
+    0 9px 12px -4px rgba(0, 0, 0, 0.55);
+  transform: translateY(var(--lift, 0px)) rotate(var(--rot, 0deg)) scale(var(--s, 1));
+  transition:
+    transform 0.22s var(--ease),
+    box-shadow 0.22s var(--ease),
+    opacity 0.6s ease,
+    filter 0.6s ease;
+  animation: stone-arrive 0.5s var(--ease) backwards;
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+
+/* Mineral flecks: positions come from script.js so every pebble differs */
+.stone__body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--flecks, none);
+  opacity: 0.7;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+@keyframes stone-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) rotate(var(--rot, 0deg)) scale(0.86);
+  }
+}
+
+/* Painted marks: 4 colours x 4 shapes, one of each on every stone */
+.stone__mark {
+  --m: calc(var(--stone) * 0.44);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--m);
+  height: var(--m);
+  margin: calc(var(--m) / -2) 0 0 calc(var(--m) / -2);
+  color: var(--paint, #241c17);
+  opacity: 0.92;
+}
+
+.stone__mark--dot {
+  border-radius: 50%;
+  background: currentColor;
+  transform: scale(0.84);
+}
+
+.stone__mark--ring {
+  border-radius: 50%;
+  border: calc(var(--m) * 0.22) solid currentColor;
+}
+
+.stone__mark--triangle {
+  background: currentColor;
+  -webkit-clip-path: polygon(50% 4%, 99% 92%, 1% 92%);
+  clip-path: polygon(50% 4%, 99% 92%, 1% 92%);
+}
+
+.stone__mark--cross::before,
+.stone__mark--cross::after {
+  content: "";
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  top: 50%;
+  height: calc(var(--m) * 0.26);
+  margin-top: calc(var(--m) * -0.13);
+  border-radius: 2px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+.stone__mark--cross::after {
+  transform: rotate(-45deg);
+}
+
+/* Picked up off the ground */
+.stone.is-lifted .stone__body {
+  --lift: -6px;
+  --s: 1.13;
+  box-shadow:
+    inset -2px -3px 5px rgba(84, 68, 54, 0.42),
+    inset 1px 2px 2px rgba(255, 255, 255, 0.9),
+    0 2px 1px rgba(0, 0, 0, 0.2),
+    0 12px 10px -2px rgba(0, 0, 0, 0.42),
+    0 22px 22px -6px rgba(0, 0, 0, 0.5);
+}
+
+/* Final reveal */
+.stone.is-dim .stone__body {
+  opacity: 0.26;
+  filter: saturate(0.5) brightness(0.8);
+}
+
+.stone.is-found {
+  z-index: 5;
+}
+
+.stone.is-found .stone__body {
+  --s: 1.32;
+  --lift: -3px;
+  box-shadow:
+    inset -2px -3px 5px rgba(84, 68, 54, 0.3),
+    inset 1px 2px 2px rgba(255, 255, 255, 0.95),
+    0 0 0 1px rgba(255, 236, 200, 0.7),
+    0 0 26px 6px rgba(233, 184, 114, 0.7),
+    0 14px 18px -6px rgba(0, 0, 0, 0.6);
+}
+
+.stone.is-found::before {
+  opacity: 1;
+  animation: halo 1.7s ease-in-out infinite;
+}
+
+@keyframes halo {
+  0%,
+  100% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.45;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Control panel (glass card)
+   -------------------------------------------------------------------------- */
+
+.panel {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 172px;
+  padding: 16px 16px 12px;
+  border-radius: 24px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255, 240, 220, 0.085), rgba(255, 240, 220, 0.03));
+  border: 1px solid rgba(255, 236, 210, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 245, 230, 0.1),
+    0 24px 40px -24px rgba(0, 0, 0, 0.8);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.panel__prompt {
+  margin: 0;
+  min-height: 1.9rem;
+  font-family: var(--serif);
+  font-size: 1.22rem;
+  line-height: 1.5;
+  color: var(--text);
+  transition: color 0.3s;
+}
+
+.panel__prompt.is-swap {
+  animation: prompt-swap 0.38s var(--ease);
+}
+
+.panel__prompt.is-dramatic {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  color: var(--amber);
+  text-shadow: 0 0 26px rgba(233, 184, 114, 0.55);
+}
+
+.panel__prompt.is-dramatic.is-swap {
+  animation: prompt-reveal 0.7s var(--ease);
+}
+
+@keyframes prompt-swap {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+
+@keyframes prompt-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+    letter-spacing: 0.12em;
+  }
+}
+
+.panel__actions {
+  min-height: 56px;
+}
+
+.actions {
+  display: grid;
+  gap: 12px;
+}
+
+.actions--pair {
+  grid-template-columns: 1fr 1fr;
+}
+
+.panel__foot {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel__note {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--ash);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.btn {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 56px;
+  padding: 0 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 236, 210, 0.18);
+  background: linear-gradient(180deg, rgba(255, 240, 220, 0.12), rgba(255, 240, 220, 0.035));
+  color: var(--text);
+  font: 600 1rem/1 var(--sans);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 245, 230, 0.16),
+    0 12px 20px -12px rgba(0, 0, 0, 0.8);
+  transition: transform 0.12s, opacity 0.25s, border-color 0.2s, background 0.2s;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+
+.btn:disabled {
+  opacity: 0.36;
+  cursor: default;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--pebble);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .btn--line:hover:not(:disabled) {
+    border-color: rgba(233, 184, 114, 0.7);
+    background: linear-gradient(180deg, rgba(233, 184, 114, 0.2), rgba(233, 184, 114, 0.06));
+  }
+  .btn--primary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #f6d6a2, #dba558);
+  }
+}
+
+.btn--line {
+  font-family: var(--serif);
+  font-size: 1.12rem;
+  letter-spacing: 0.24em;
+  /* cancel the trailing letter-space so the word sits centred */
+  text-indent: 0.24em;
+}
+
+.btn--primary {
+  color: #2a1a0c;
+  border-color: rgba(255, 232, 196, 0.55);
+  background: linear-gradient(180deg, #f0c98d, #d49a4e);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 240, 0.55),
+    0 14px 24px -12px rgba(201, 143, 69, 0.6);
+}
+
+/* --------------------------------------------------------------------------
+   Larger screens
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 720px) and (min-height: 760px) {
+  .game {
+    gap: 18px;
+  }
+  .masthead__sub {
+    font-size: 1.08rem;
+  }
+}
+
+/* Short screens: tighten the frame so the whole game still fits */
+@media (max-height: 640px) {
+  .game {
+    gap: 10px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    justify-content: flex-start;
+  }
+  .masthead__title {
+    font-size: 1.3rem;
+  }
+  .masthead__sub {
+    margin-top: 2px;
+    font-size: 0.92rem;
+  }
+  .progress {
+    margin-top: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  .board {
+    min-height: 286px;
+  }
+  .panel {
+    gap: 8px;
+    min-height: 0;
+    padding: 12px 14px 8px;
+  }
+  .btn {
+    min-height: 50px;
+  }
+  .panel__actions {
+    min-height: 50px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion: script.js also shortens the rearrangement
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .stone__body,
+  .panel__prompt.is-swap,
+  .panel__prompt.is-dramatic.is-swap,
+  .stone.is-found::before {
+    animation: none;
+  }
+}
